@@ -1,9 +1,0 @@
-syntax = "proto3";
-
-package P4TLB.MasterServer;
-
-enum P4PlayerEvents {
-    OnFormationUpdate = 0;
-    OnArmyPresetUpdate = 1;
-    OnUnitUpdate = 2;
-}
