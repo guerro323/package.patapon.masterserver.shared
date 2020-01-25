@@ -1,0 +1,14 @@
+{
+    "name": "patapon.masterserver.shared",
+    "references": [
+        "package.guerro.shared",
+        "Unity.Mathematics",
+        "Unity.Collections",
+        "Unity.Jobs",
+        "Unity.InputSystem"
+    ],
+    "optionalUnityReferences": [],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false
+}

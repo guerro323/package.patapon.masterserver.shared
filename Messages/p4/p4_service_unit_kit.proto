@@ -1,0 +1,56 @@
+syntax = "proto3";
+
+package P4TLB.MasterServer;
+
+service P4UnitKitService {
+    rpc GetCurrentKit(GetKitRequest) returns (GetKitResponse);
+    rpc SetCurrentKit(SetKitRequest) returns (SetKitResponse);
+}
+
+message GetKitRequest {
+    uint64 unit_id = 1;
+}
+
+message GetKitResponse {
+    enum ErrorCode
+    {
+        OK = 0;
+        NotFound = 1;
+    }
+    
+    // The error isn't that explicit since the server doesn't check if the unit does exist or not...
+    ErrorCode error = 1;
+    // official P4 kits...
+    uint32 kit_id = 2;
+    // a custom name id would only be used if 'kit_id' is set to 0 (and on masterservers that support modding...)
+    string kit_custom_name_id = 3;
+}
+
+message SetKitRequest {
+    string client_token = 1;
+    
+    uint64 unit_id = 2;
+    uint32 kit_id = 3;
+    string kit_custom_name_id = 4;
+}
+
+message SetKitResponse {
+    enum ErrorCode
+    {
+        OK = 0;
+        EntityNotFound = 1;
+        KitNotUnlocked = 2;
+        Unauthorized = 3;
+        UnknownError = 4;
+    }
+    
+    ErrorCode error = 1;
+}
+
+// Message only used on MasterServer...
+// This msg can be freely removed and added to the DB without any risk, since Units are like entities: components holder.
+message P4KitData {
+    uint64 unit_id = 1;
+    uint32 kit_id = 2;
+    string kit_custom_name_id = 3;
+}

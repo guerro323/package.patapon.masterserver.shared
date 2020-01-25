@@ -1,0 +1,135 @@
+syntax = "proto3";
+
+package P4TLB.MasterServer;
+
+service GameServerService {
+    // Client
+    rpc GetConnectionToken(ConnectionTokenRequest) returns (ConnectionTokenResponse);
+    // Client
+    rpc TryConnect(ConnectionRequest) returns (ConnectionResponse);
+    // Server
+    rpc GetPendingConnectionTokens(GetPendingConnectionTokenRequest) returns (GetPendingConnectionTokenResponse);
+    // Server
+    rpc AcknowledgeToken(AcknowledgeTokenRequest) returns (AcknowledgeTokenResponse);
+    // Server
+    rpc UpdateServerInformation(SetServerInformationRequest) returns (SetServerInformationResponse);
+    // Both
+    rpc GetServerList(ServerListRequest) returns (ServerListResponse);
+    rpc GetServerInformation(ServerInformationRequest) returns (ServerInformationResponse);
+}
+
+message ConnectionTokenRequest {
+    string client_token = 1;
+    // if it's at 0, 'user_login' will be used
+    uint64 server_user_id = 2;
+    string server_user_login = 3;
+}
+
+message ConnectionTokenResponse {
+    // Connection token until the gameserver decide to remove it, so be sure to connect as fast as possible!
+    string connect_token = 1;
+}
+
+message ConnectionRequest {
+    string client_token = 1;
+    uint64 server_user_id = 2;
+    string server_user_login = 3;
+}
+
+message ConnectionResponse {
+    enum ErrorCode {
+        // Ok, we can connect.
+        OK = 0;
+        // Our client token is invalid.
+        InvalidToken = 1;
+        // Is the server still waiting for our connection token to arrive?
+        ServerAckPending = 2;
+        // The problem is client side, it didn't asked to get connection token
+        NoConnectionTokenAsked = 3;
+    }
+
+    ErrorCode error = 1;
+    string end_point_address = 2;
+    int32 end_point_port = 3;
+    bool is_ipv6 = 4;
+    string connect_token = 5;
+}
+
+message GetPendingConnectionTokenRequest {
+    string client_token = 1;
+}
+
+message GetPendingConnectionTokenResponse {
+    message ClientConnectionToken {
+        string token = 1;
+        uint64 user_id = 2;
+    }
+
+    enum ErrorCode {
+        OK = 0;
+        InvalidClientToken = 1;
+    }
+    
+    ErrorCode error = 1;
+    repeated ClientConnectionToken list = 2;
+}
+
+message AcknowledgeTokenRequest {
+    string client_token = 1;
+    uint64 acknowledged_user_id = 2;
+}
+
+message AcknowledgeTokenResponse {
+    enum ErrorCode {
+        OK = 0;
+        InvalidClientToken = 1;
+    }
+
+    ErrorCode error = 1;
+}
+
+message ServerInformation {
+    uint64 server_user_id = 1;
+    string server_user_login = 2;
+    string name = 3;
+    int32 slot_count = 4;
+    int32 slot_limit = 5;
+}
+
+message SetServerInformationRequest {
+    string client_token = 1;
+    
+    string name = 2;
+    int32 slot_count = 3;
+    int32 slot_limit = 4;
+}
+
+message SetServerInformationResponse {
+    enum ErrorCode {
+        OK = 0;
+        InvalidClientToken = 1;
+    }
+    
+    ErrorCode error = 1;
+}
+
+message ServerListRequest {
+    // the client token could be useful to show private servers... (eg: friend server, tournament server)
+    string client_token = 1;
+    string query_string = 10;
+}
+
+message ServerListResponse {
+    repeated ServerInformation servers = 1;
+}
+
+message ServerInformationRequest {
+    // the client token could be useful to show private servers... (eg: friend server, tournament server)
+    string client_token = 1;
+    uint64 server_user_id = 2;
+    string server_user_login = 3;
+}
+
+message ServerInformationResponse {
+    ServerInformation information = 1;
+}
